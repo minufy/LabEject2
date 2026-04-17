@@ -1,35 +1,47 @@
-local Player = Object:extend()
+Player = Object:extend()
+
+require("objects.player.movement")
+require("objects.player.draw")
+require("objects.player.collision")
 
 local img = NewImage("player")
 
 function Player:new(data)
+    self:init_draw()
+    self:init_movement()
+
     self.x = data.x
     self.y = data.y
     self.w = img:getWidth()
     self.h = img:getHeight()
-
+    
     if not Edit.editing then
+        self.y = self.y-self.h+TILE_SIZE
+        self.cam_x = self.x+self.w/2
+        self.cam_y = self.y+self.h/2
         Camera:offset(Res.w/2, Res.h/2)
-        Camera:set(self.x+self.w/2, self.y+self.h/2)
+        Camera:set(self.cam_x, self.cam_y)
         Camera:snap_back()
     end
 end
 
 function Player:update(dt)
-    Camera:set(self.x+self.w/2, self.y+self.h/2)
-    local ix = 0
-    if Input.right.down then
-        ix = ix+1
-    end
-    if Input.left.down then
-        ix = ix-1
-    end
-    local found_x = Physics.move_and_col(self, ix*2*dt, 0)
-    Physics.solve_x(self, ix, found_x[1])
+    -- follow player
+    self.cam_x = self.x+self.w/2
+    self.cam_y = self.y+self.h/2
+    
+    self:update_collision(dt)
+    self:update_draw(dt)
+    self:update_movement(dt)
+
+    -- Game:add(Particle, self.x+self.w/2, self.y+self.h/2, 0, 0, 2)
+
+    -- set camera after collision
+    Camera:set(self.cam_x, self.cam_y)
 end
 
 function Player:draw()
-    love.graphics.draw(img, self.x, self.y)
+    self:draw_draw()
 end
 
 return Player

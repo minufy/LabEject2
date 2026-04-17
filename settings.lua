@@ -1,8 +1,10 @@
+Input.scan = NewInput({"r"})
+
 Input.right = NewInput({"right", "d"})
 Input.left = NewInput({"left", "a"})
--- Input.up = new({"up", "w"})
--- Input.down = new({"down", "s"})
--- Input.jump = new({"space", "up", "w", "lshift"})
+-- Input.up = NewInput({"up", "w"})
+Input.down = NewInput({"down", "s"})
+Input.jump = NewInput({"space", "up", "w", "lshift"})
 
 Camera.x_damp = 0.2
 Camera.y_damp = 0.2

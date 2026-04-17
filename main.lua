@@ -1,3 +1,8 @@
+local lurker = require("modules.lurker")
+lurker.postswap = function(f)
+    Log("File " .. f .. " was swapped")
+end
+
 Object = require("modules.classic")
 Particle = require("objects.particle")
 
@@ -45,6 +50,10 @@ function love.update(dt)
     SM:update(dt)
     ResetWheelInput()
     UpdateLog(dt)
+    if CONSOLE and Input.ctrl.down and Input.scan.pressed then
+        Level:reload()
+        lurker.scan()
+    end
 end
 
 function love.draw()
