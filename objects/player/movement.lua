@@ -1,21 +1,28 @@
-local speed = 1.47
-local air_speed = 1.6
-local gravity = 0.42
-local jump_force = 4.1
-local pad_jump_force = 8.3
+local speed = 2.3
+local air_speed = 2.2
+local gravity = 0.09
+local jump_force = 3.2
 local max_vy = 6
 local min_vy = -6
 local acc_damp = 0.1
-local dec_damp = 0.1
-local vx_damp = 0.3
-local vx_dec = 0.18
+local dec_damp = 0.12
+local air_acc_damp = 0.15
+local vx_damp = 0.15
+local vx_slow_damp = 0.1
 local falling = 5
 local jump_buffer = 10
 local draw_bounce = 0.5
 local particle = 5
-local wall_speed = 0.8
-local wall_jump_force = 4.5
-local wall_jump_mult = 0.75
+local wall_speed = 1
+local wall_return_time = 18
+local wall_jump_force = 2.5
+local wall_jump_mult = 0.97
+local cut_time = 10
+local dash_time = 8
+local dash_force = 4.4
+local down_dash_time = 9
+local down_dash_force = 3.5
+local dash_reset_time = 60
 
 function Player:init_movement()
     self.mx = 0
@@ -24,8 +31,16 @@ function Player:init_movement()
     self.falling = 999
     self.jump_buffer = 999
     self.wall_side = 0
+    self.wall_return_time = 0
+    self.dash_time = 0
+    self.dashing = false
+    self.down_dash_time = 0
+    self.down_dashing = false
+    self.dash_reset_time = 0
     self.gravity = gravity
     self.speed = speed
+    self.last_ix = 0
+    self.double_jump = false
 
     self.draw_bounce = 0
     self.particle = 0
@@ -52,27 +67,96 @@ function Player:update_movement(dt)
         ix = ix-1
     end
 
-    if self.falling < falling and Input.down.down then
-        self.draw_bounce = -draw_bounce
+    if ix ~= 0 then
+        self.last_ix = ix
+    end
+    
+    if ix == self.wall_side then
+        if self.wall_return_time > 0 then
+            ix = 0
+        end
+    end
+    
+    if self.dash_reset_time < 0 then
+        if Input.dash.pressed then
+            self.dash_reset_time = dash_reset_time
+            self.dashing = true
+            self.dash_time = dash_time
+            self.wall_return_time = 0
+            self.vx = self.last_ix*dash_force
+        end
+        if Input.down_dash.pressed then
+            self.dash_reset_time = dash_reset_time
+            self.down_dashing = true
+            self.down_dash_time = down_dash_time
+            self.vy = down_dash_force
+        end
+    else
+        self.dash_reset_time = self.dash_reset_time-dt
+    end
+
+    if self.dash_time > 0 then
+        self.dash_time = self.dash_time-dt
         ix = 0
-    end
-
-    if ix == 0 then
-        self.mx = self.mx+(ix-self.mx)*dec_damp*dt
+        self.vy = 0
     else
-        self.mx = self.mx+(ix-self.mx)*acc_damp*dt
+        if ix ~= 0 and self.wall_return_time <= 0 then
+            self.vx = self.vx-self.vx*vx_damp*dt
+        end
+        if self.dashing then
+            if ix == 0 then
+                self.vx = 0
+            end
+            self.dashing = false
+        end
+    end
+    if self.down_dash_time > 0 then
+        self.down_dash_time = self.down_dash_time-dt
+        self.vy = down_dash_force
+    elseif self.down_dashing then
+        self.down_dashing = false
+        self.vy = 0
     end
 
-    if Sign(self.vx) == Sign(self.mx) then
+    if self.wall_return_time > 0 then
+        self.wall_return_time = self.wall_return_time-dt
+    elseif ix ~= 0 then
         self.vx = self.vx-self.vx*vx_damp*dt
-    else
-        self.vx = self.vx-Sign(self.vx)*vx_dec*dt
+    end
+
+    if Sign(ix) == Sign(self.vx) then
+        self.vx = self.vx-self.vx*vx_slow_damp*dt
     end
 
     if self.falling > falling then
         self.speed = air_speed
+        if ix ~= 0 then
+            self.mx = self.mx+(ix-self.mx)*air_acc_damp*dt
+        end
     else
         self.speed = speed
+        if self.dash_time <= 0 then
+            self.vx = 0
+        end
+        if self.wall_side == 0 then
+            if Input.down.down then
+                self.draw_bounce = -draw_bounce
+                ix = 0
+            end
+            -- local hx = (1+self.draw_bounce)
+            -- if Input.down.pressed then
+            --     self.h = self.oh*hx
+            --     self.y = self.y+(self.oh-self.h)
+            -- elseif Input.down.released then
+            --     self.y = self.y-(self.oh-self.h)
+            --     self.h = self.oh
+            -- end
+        end
+        if ix == 0 then
+            self.mx = self.mx+(ix-self.mx)*dec_damp*dt
+        else
+            self.mx = self.mx+(ix-self.mx)*acc_damp*dt
+        end
     end
 
     local found_x = Physics.move_and_col(self, (self.vx+self.mx*self.speed)*dt, 0)
@@ -117,6 +201,7 @@ function Player:update_movement(dt)
             end
             self.wall_side = 0
             self.falling = 0
+            self.double_jump = true
         end
         self.vy = 0
     end
@@ -129,10 +214,17 @@ function Player:update_movement(dt)
     if self.jump_buffer <= jump_buffer then
         self:jump()
     end
-    if Input.jump.down then
-        self.gravity = gravity/2
-    else
-        self.gravity = gravity
+    -- if Input.jump.down then
+    --     self.gravity = gravity/2
+    -- else
+    --     self.gravity = gravity
+    -- end
+    if Input.jump.released and self.vy < 0 and self.wall_side == 0 then
+        self.vy_cut = true
+    end
+    if self.vy_cut and self.falling > 999+cut_time then
+        self.vy = 0
+        self.vy_cut = false
     end
 
     if ix ~= 0 and self.falling <= falling and #found_x == 0 or self.wall_particle then
@@ -145,12 +237,16 @@ function Player:update_movement(dt)
 end
 
 function Player:jump()
-    if self.falling <= falling then
+    if self.falling <= falling or self.double_jump then
+        if self.double_jump and self.falling > falling then
+            self.double_jump = false
+        end
         -- Audio.jump:play()
         if self.wall_side ~= 0 then
+            self.wall_return_time = wall_return_time
             self.vx = -self.wall_side*wall_jump_force
             self.vy = -jump_force*wall_jump_mult
-            self.wall_side = 0
+            self.mx = 0
         else
             self.vy = -jump_force
         end
@@ -160,16 +256,6 @@ function Player:jump()
         for _ = 0, 4 do
             Game:add(Particle, self.x+self.w/2, self.y+self.h, math.random(-15, 15), math.random(-10, 0), math.random(2, 6))
         end
-    end
-end
-
-function Player:pad_jump()
-    self.vy = -pad_jump_force
-    self.draw_bounce = draw_bounce
-    self.falling = 999
-    self.jump_buffer = 999
-    for _ = 0, 4 do
-        Game:add(Particle, self.x+self.w/2, self.y+self.h, math.random(-15, 15), math.random(-10, 0), math.random(2, 6))
     end
 end
 

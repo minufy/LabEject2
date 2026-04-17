@@ -23,7 +23,7 @@ require("scenes.sm")
 require("settings")
 
 function love.load()
-    LogFont = love.graphics.newFont(10)
+    LogFont = love.graphics.newFont(20)
     love.graphics.setDefaultFilter("nearest", "nearest")
     love.graphics.setLineStyle("rough")
     Font = love.graphics.newFont("assets/fonts/Galmuri9.ttf", 10)

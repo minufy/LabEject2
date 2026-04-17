@@ -12,8 +12,9 @@ function Player:new(data)
 
     self.x = data.x
     self.y = data.y
+    self.oh = img:getHeight()
     self.w = img:getWidth()
-    self.h = img:getHeight()
+    self.h = self.oh
     
     if not Edit.editing then
         self.y = self.y-self.h+TILE_SIZE
