@@ -1,7 +1,7 @@
 local speed = 2.3
 local air_speed = 2.2
-local gravity = 0.09
-local jump_force = 3.2
+local gravity = 0.08
+local jump_force = 3
 local max_vy = 6
 local min_vy = -6
 local acc_damp = 0.1
@@ -17,7 +17,7 @@ local wall_speed = 1
 local wall_return_time = 18
 local wall_jump_force = 2.5
 local wall_jump_mult = 0.97
-local cut_time = 10
+local cut_time = 8
 local dash_time = 8
 local dash_force = 4.4
 local down_dash_time = 9
@@ -31,6 +31,7 @@ function Player:init_movement()
     self.falling = 999
     self.jump_buffer = 999
     self.wall_side = 0
+    self.last_wall_side = 0
     self.wall_return_time = 0
     self.dash_time = 0
     self.dashing = false
@@ -71,7 +72,7 @@ function Player:update_movement(dt)
         self.last_ix = ix
     end
     
-    if ix == self.wall_side then
+    if ix == self.last_wall_side then
         if self.wall_return_time > 0 then
             ix = 0
         end
@@ -138,7 +139,7 @@ function Player:update_movement(dt)
         if self.dash_time <= 0 then
             self.vx = 0
         end
-        if self.wall_side == 0 then
+        if self.last_wall_side == 0 then
             if Input.down.down then
                 self.draw_bounce = -draw_bounce
                 ix = 0
@@ -166,6 +167,7 @@ function Player:update_movement(dt)
     if #found_x > 0 then
         self.vy = math.min(self.vy, wall_speed)
         self.wall_side = Sign(found_x[1].x-self.x)
+        self.last_wall_side = self.wall_side
         self.falling = 0
         self.wall_particle = true
     else
@@ -200,6 +202,7 @@ function Player:update_movement(dt)
                 -- Audio.land:play()
             end
             self.wall_side = 0
+            self.last_wall_side = self.wall_side
             self.falling = 0
             self.double_jump = true
         end
@@ -247,6 +250,7 @@ function Player:jump()
             self.vx = -self.wall_side*wall_jump_force
             self.vy = -jump_force*wall_jump_mult
             self.mx = 0
+            self.wall_side = 0
         else
             self.vy = -jump_force
         end
