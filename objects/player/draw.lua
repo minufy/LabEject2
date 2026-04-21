@@ -1,11 +1,12 @@
-local img = NewImage("player")
+local Draw = Object:extend()
+
 local bounce_damp = 0.2
 
-function Player:init_draw()
+function Draw:init_draw()
     self.flip = 1
 end
 
-function Player:update_draw(dt)
+function Draw:update_draw(dt)
     local flip = 0
     if Input.right.down then
         flip = flip+1
@@ -20,7 +21,7 @@ function Player:update_draw(dt)
     self.draw_bounce = self.draw_bounce+(0-self.draw_bounce)*bounce_damp*dt
 end
 
-function Player:draw_draw()
+function Draw:draw_draw()
     local sx = (1-self.draw_bounce)
     local sy = (1+self.draw_bounce)
     local ox = self.w*(1-self.flip*sx)/2
@@ -28,8 +29,8 @@ function Player:draw_draw()
     -- if Input.down.down then
     --     oy = 0
     -- end
-    love.graphics.draw(img, self.x+ox, self.y+oy, 0, self.flip*sx, sy)
+    love.graphics.draw(Image.lab, self.x+ox, self.y+oy, 0, self.flip*sx, sy)
     -- love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
 end
 
-return Player
+return Draw

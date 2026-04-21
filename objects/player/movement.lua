@@ -1,3 +1,5 @@
+local Movement = Object:extend()
+
 local speed = 2.3
 local air_speed = 2.2
 local gravity = 0.08
@@ -24,7 +26,7 @@ local down_dash_time = 9
 local down_dash_force = 3.5
 local dash_reset_time = 60
 
-function Player:init_movement()
+function Movement:init_movement()
     self.mx = 0
     self.vx = 0
     self.vy = 0
@@ -48,7 +50,7 @@ function Player:init_movement()
     self.wall_particle = false
 end
 
-function Player:col_other(found_other, found, cb)
+function Movement:col_other(found_other, found, cb)
     for i, col in ipairs(found_other) do
         if tostring(col) == "switch" or tostring(col) == "switch_block" and col.soild then
             table.insert(found, col)
@@ -59,7 +61,7 @@ function Player:col_other(found_other, found, cb)
     end
 end
 
-function Player:update_movement(dt)
+function Movement:update_movement(dt)
     local ix = 0
     if Input.right.down then
         ix = ix+1
@@ -162,7 +164,7 @@ function Player:update_movement(dt)
 
     local found_x = Physics.move_and_col(self, (self.vx+self.mx*self.speed)*dt, 0)
     local found_other_x = Physics.col(self, {"switch", "switch_block"})
-    Player:col_other(found_other_x, found_x)
+    Movement:col_other(found_other_x, found_x)
     Physics.solve_x(self, self.vx+self.mx*self.speed, found_x[1])
     if #found_x > 0 then
         self.vy = math.min(self.vy, wall_speed)
@@ -183,7 +185,7 @@ function Player:update_movement(dt)
     end
     local found_y = Physics.move_and_col(self, 0, self.vy*dt)
     local found_other_y = Physics.col(self, {"switch", "switch_block"})
-    Player:col_other(found_other_y, found_y, function (col)
+    Movement:col_other(found_other_y, found_y, function (col)
         if tostring(col) == "switch" and self.vy < 0 then
             for _ = 0, 4 do
                 Game:add(Particle, self.x+self.w/2, self.y, math.random(-12, 12), math.random(0, 5), math.random(2, 4))
@@ -239,7 +241,7 @@ function Player:update_movement(dt)
     end
 end
 
-function Player:jump()
+function Movement:jump()
     if self.falling <= falling or self.double_jump then
         if self.double_jump and self.falling > falling then
             self.double_jump = false
@@ -263,4 +265,4 @@ function Player:jump()
     end
 end
 
-return Player
+return Movement

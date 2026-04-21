@@ -1,10 +1,10 @@
-Player = Object:extend()
+local Player = Object:extend()
 
-require("objects.player.movement")
-require("objects.player.draw")
-require("objects.player.collision")
+Player:implement(require("objects.lab.movement"))
+Player:implement(require("objects.lab.draw"))
+Player:implement(require("objects.lab.collision"))
 
-local img = NewImage("player")
+NewImage("lab")
 
 function Player:new(data)
     self:init_draw()
@@ -12,8 +12,8 @@ function Player:new(data)
 
     self.x = data.x
     self.y = data.y
-    self.oh = img:getHeight()
-    self.w = img:getWidth()
+    self.oh = Image.lab:getHeight()
+    self.w = Image.lab:getWidth()
     self.h = self.oh
     
     if not Edit.editing then

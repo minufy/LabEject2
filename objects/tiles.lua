@@ -34,7 +34,7 @@ end
 
 function Tiles:draw()
     for key, tile in pairs(self.tiles) do
-        love.graphics.draw(TILE_IMGS[tile], self.xs[key]*TILE_SIZE, self.ys[key]*TILE_SIZE)
+        love.graphics.draw(Image["tile."..tile], self.xs[key]*TILE_SIZE, self.ys[key]*TILE_SIZE)
     end
 end
 

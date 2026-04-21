@@ -19,7 +19,6 @@ OBJECT_TYPES = {
     "zone",
 }
 IMG_TYPES = {
-    "test",
 }
 
 TILE_SIZE = 16

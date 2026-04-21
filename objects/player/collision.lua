@@ -1,7 +1,9 @@
+local Collision = Object:extend()
+
 local spike_col_dist = TILE_SIZE/1.7
 -- local exit_col_dist = TILE_SIZE
 
-function Player:update_collision(dt)
+function Collision:update_collision(dt)
     local col_zones = Physics.col(self, {"zone"})
     if #col_zones > 0 then
         local zone = col_zones[1]
@@ -28,7 +30,7 @@ function Player:update_collision(dt)
     -- end
 end
 
-function Player:die()
+function Collision:die()
     for i = 0, 4 do
         Game:add(Particle, self.x+self.w/2, self.y+self.h/2, math.random(-10, 10), math.random(-10, 10), math.random(6, 12))
     end
@@ -38,4 +40,4 @@ function Player:die()
     -- Audio.die:play()
 end
 
-return Player
+return Collision
