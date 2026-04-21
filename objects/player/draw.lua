@@ -29,7 +29,7 @@ function Draw:draw_draw()
     -- if Input.down.down then
     --     oy = 0
     -- end
-    love.graphics.draw(Image.lab, self.x+ox, self.y+oy, 0, self.flip*sx, sy)
+    love.graphics.draw(Image.player, self.x+ox, self.y+oy, 0, self.flip*sx, sy)
     -- love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
 end
 
