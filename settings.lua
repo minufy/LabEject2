@@ -1,5 +1,3 @@
-Input.scan = NewInput({"r"})
-
 Input.right = NewInput({"right", "d"})
 Input.left = NewInput({"left", "a"})
 Input.down = NewInput({"down", "s"})
@@ -22,3 +20,12 @@ IMG_TYPES = {
 }
 
 TILE_SIZE = 16
+
+local object_align = {
+    player = Bottom,
+}
+OBJECT_ALIGN = setmetatable(object_align, {
+    __index = function (t, k)
+        return None
+    end
+})

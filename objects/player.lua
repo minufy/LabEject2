@@ -17,7 +17,6 @@ function Player:new(data)
     self.h = self.oh
     
     if not Edit.editing then
-        self.y = self.y-self.h+TILE_SIZE
         self.cam_x = self.x+self.w/2
         self.cam_y = self.y+self.h/2
         Camera:offset(Res.w/2, Res.h/2)

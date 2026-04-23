@@ -127,7 +127,7 @@ function Movement:update_movement(dt)
         self.vx = self.vx-self.vx*vx_damp*dt
     end
 
-    if Sign(ix) == Sign(self.vx) then
+    if math.sign(ix) == math.sign(self.vx) then
         self.vx = self.vx-self.vx*vx_slow_damp*dt
     end
 
@@ -168,7 +168,7 @@ function Movement:update_movement(dt)
     Physics.solve_x(self, self.vx+self.mx*self.speed, found_x[1])
     if #found_x > 0 then
         self.vy = math.min(self.vy, wall_speed)
-        self.wall_side = Sign(found_x[1].x-self.x)
+        self.wall_side = math.sign(found_x[1].x-self.x)
         self.last_wall_side = self.wall_side
         self.falling = 0
         self.wall_particle = true

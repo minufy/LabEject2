@@ -1,8 +1,3 @@
-local lurker = require("modules.lurker")
-lurker.postswap = function(f)
-    Log("File " .. f .. " was swapped")
-end
-
 Object = require("modules.classic")
 Particle = require("objects.particle")
 
@@ -50,18 +45,14 @@ function love.update(dt)
     Camera:update(dt)
     SM:update(dt)
     ResetWheelInput()
-    UpdateLog(dt)
-    if CONSOLE and Input.ctrl.down and Input.scan.pressed then
-        Level:reload()
-        lurker.scan()
-    end
+    Log:update(dt)
 end
 
 function love.draw()
     Res:before()
     SM:draw()
     Res:after()
-    DrawLog()
+    Log:draw()
     if CONSOLE then
         love.graphics.print(tostring(love.timer.getFPS()))
     end

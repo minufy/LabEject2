@@ -13,7 +13,7 @@ function Zone:draw()
     if Edit.editing then
         love.graphics.setColor(0, 1, 1, 0.1)
         love.graphics.rectangle("fill", self.x, self.y, self.w, self.h)
-        ResetColor()
+        Color.reset()
         love.graphics.setFont(Font)
         love.graphics.print(self.value, self.x, self.y)
     end
